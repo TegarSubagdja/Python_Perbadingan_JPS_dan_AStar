@@ -67,6 +67,7 @@ def nodeNeighbours(cX, cY, parent, matrix):
                 neighbours.append((cX + i, cY + j))
 
         return neighbours
+        
     dX, dY = direction(cX, cY, parent[0], parent[1])
 
     if dX != 0 and dY != 0:
