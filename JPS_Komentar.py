@@ -216,11 +216,19 @@ def method(matrix, start, goal, hchoice):
         if current == goal:
             # Merekonstruksi jalur
             data = []
+            print("Close Set", "-"*120)
+            print(close_set)
+            print("Pqueue", "-"*120)
+            print(pqueue)
+            print("Came from", "-"*120)
+            print(came_from)
             while current in came_from:
                 data.append(current)
                 current = came_from[current]
             data.append(start)
             data = data[::-1]
+            print("Path", "-"*120)
+            print(data)
             endtime = time.time()
             return (data, round(endtime - starttime, 6))
 

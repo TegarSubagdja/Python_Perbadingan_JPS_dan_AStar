@@ -115,6 +115,7 @@ def main():
                     )
                 if event.key == pygame.K_7:
                     Grid.lightrefresh(background)
+                    print(f"{Grid.matrix}, {Grid.start}, {Grid.goal}")
                     Grid.drawpath(
                         astar.method(Grid.matrix, Grid.start, Grid.goal, 2),
                         background,
