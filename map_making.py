@@ -72,7 +72,7 @@ def draw_grid(grid):
             )
             # Jika koordinat diaktifkan, tampilkan koordinat di pojok kanan atas
             if show_coordinates:
-                coord_text = font.render(f"{col},{row}", True, (0, 0, 0))
+                coord_text = font.render(f"{row},{col}", True, (0, 0, 0))
                 screen.blit(coord_text, (col * CELL_SIZE + CELL_SIZE - 40, row * CELL_SIZE + 5))
 
 # Fungsi untuk menampilkan mode aktif di layar
@@ -97,21 +97,38 @@ def draw_lines():
         pygame.draw.circle(screen, hex_to_rgb(CIRCLE_COLOR), (end_x, end_y), CIRCLE_RADIUS)  # Radius sesuai variabel
 
 # Fungsi untuk menyimpan gambar dengan nama yang dipilih pengguna
-def save_image():
-    """Menyimpan grid dan path sebagai file gambar PNG dengan nama yang dipilih oleh pengguna."""
+def save_image(replace=False, default_filename='grid_image.png'):
+    """
+    Menyimpan grid dan path sebagai file gambar PNG.
+    
+    Parameters:
+    - replace (bool): Jika True, akan menimpa file yang sudah ada 
+                      Jika False, akan memunculkan dialog pemilihan file baru
+    - default_filename (str): Nama file default jika mode replace aktif
+    """
     root = tk.Tk()
     root.withdraw()  # Menyembunyikan jendela utama tkinter
 
-    # Menampilkan dialog penyimpanan file
-    file_path = filedialog.asksaveasfilename(
-        defaultextension=".png", 
-        filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
-        title="Save Image As"
-    )
+    if replace:
+        # Mode replace - gunakan nama file default atau path yang sudah ada
+        file_path = default_filename
+    else:
+        # Menampilkan dialog penyimpanan file
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".png", 
+            initialfile=default_filename,
+            filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+            title="Save Image As"
+        )
 
-    if file_path:  # Jika pengguna memilih lokasi
-        pygame.image.save(screen, file_path)  # Simpan gambar
-        print(f"Grid dan path berhasil disimpan sebagai '{file_path}'")
+    if file_path:  # Jika ada path file
+        try:
+            pygame.image.save(screen, file_path)
+            print(f"Grid dan path berhasil disimpan sebagai '{file_path}'")
+            return True
+        except Exception as e:
+            print(f"Gagal menyimpan gambar: {e}")
+            return False
 
 # Program utama
 running = True
@@ -182,7 +199,7 @@ while running:
                 elif event.key == pygame.K_q:  # Ctrl + Q untuk warna pink
                     active_mode = 8
                 elif event.key == pygame.K_p:  # Ctrl + P untuk save
-                    save_image()
+                    save_image(replace=True)
                 elif event.key == pygame.K_r:  # Ctrl + R untuk reset grid
                     map_grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=int)
                     lines = []

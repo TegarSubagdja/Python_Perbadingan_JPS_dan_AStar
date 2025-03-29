@@ -61,6 +61,7 @@ def method(matrix, start, goal, hchoice):
     # Inisialisasi antrian prioritas
     pqueue = []
     heapq.heappush(pqueue, (fscore[start], start))
+    print(f"Pqueue awal {pqueue}")
 
     # Mulai menghitung waktu eksekusi
     starttime = time.time()
@@ -88,6 +89,7 @@ def method(matrix, start, goal, hchoice):
             print(path)
             endtime = time.time()
             return (path, round(endtime - starttime, 6))
+        
         # Tambahkan node saat ini ke set tertutup
         close_set.add(current)
         
