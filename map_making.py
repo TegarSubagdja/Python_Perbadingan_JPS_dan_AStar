@@ -12,8 +12,8 @@ CIRCLE_RADIUS = 10  # Ukuran radius bulatan (dalam pixel)
 CIRCLE_COLOR = "#000000"  # Warna bulatan, misalnya tomat
 
 # Konfigurasi grid
-GRID_SIZE = 5
-CELL_SIZE = 100
+GRID_SIZE = 10
+CELL_SIZE = 50 
 WIDTH = GRID_SIZE * CELL_SIZE
 HEIGHT = GRID_SIZE * CELL_SIZE
 
@@ -130,6 +130,11 @@ def save_image(replace=False, default_filename='grid_image.png'):
             print(f"Gagal menyimpan gambar: {e}")
             return False
 
+def drawJumpPoint():
+    import JPS_Komentar
+
+    points = JPS_Komentar.method()
+
 # Program utama
 running = True
 drawing_line = False  # Apakah sedang menggambar garis
@@ -208,6 +213,21 @@ while running:
                 elif event.key == pygame.K_t:  # Ctrl + T untuk menghapus garis terakhir
                     if lines:
                         lines.pop()  # Hapus garis terakhir
+                elif event.key == pygame.K_m:
+                    import JPS_Komentar
+                    start = np.where(map_grid == 2)
+                    goal = np.where(map_grid == 3)
+                    print(f"Start: {start}, Goal: {goal}")
+                    if start.size != 0 or goal.size != 0:
+                        start = tuple(map(int, start[0]))
+                        goal = tuple(map(int, goal[0]))
+                        jp = JPS_Komentar.method(map_grid, start, goal, 2)
+                    else:
+                        jp = JPS_Komentar.method(map_grid, (0,0), (2,2), 2)
+
+                    print(jp[0])
+                    for row, col in jp[0]:
+                        map_grid[row, col] = 8
 
     # Gambar ulang layar
     screen.fill(hex_to_rgb("#FFFFFF"))
@@ -226,7 +246,7 @@ while running:
         7: "Gray (Ctrl + E)",
         8: "Pink (Ctrl + Q)"
     }
-    # display_mode(mode_texts.get(active_mode, "Unknown"))
+    display_mode(mode_texts.get(active_mode, "Unknown"))
 
     pygame.display.flip()
 
