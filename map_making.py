@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import filedialog
 import pygame
 import numpy as np
+import JPS_Komentar
+
 
 # Variabel untuk ketebalan garis
 LINE_WIDTH = 2  # Menentukan ketebalan garis, bisa diubah sesuai kebutuhan
@@ -214,9 +216,9 @@ while running:
                     if lines:
                         lines.pop()  # Hapus garis terakhir
                 elif event.key == pygame.K_m:
-                    import JPS_Komentar
-                    start = np.where(map_grid == 2)
-                    goal = np.where(map_grid == 3)
+
+                    start = np.argwhere(map_grid == 2)
+                    goal = np.argwhere(map_grid == 3)
                     print(f"Start: {start}, Goal: {goal}")
                     if start.size != 0 or goal.size != 0:
                         start = tuple(map(int, start[0]))
@@ -224,10 +226,12 @@ while running:
                         jp = JPS_Komentar.method(map_grid, start, goal, 2)
                     else:
                         jp = JPS_Komentar.method(map_grid, (0,0), (2,2), 2)
+                    
+                    jp = jp[0]
+                    jp = jp[1:-1]
 
-                    print(jp[0])
-                    for row, col in jp[0]:
-                        map_grid[row, col] = 8
+                    for row, col in jp:
+                        map_grid[row, col] = 5
 
     # Gambar ulang layar
     screen.fill(hex_to_rgb("#FFFFFF"))

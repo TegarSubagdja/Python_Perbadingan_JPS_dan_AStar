@@ -116,32 +116,38 @@ def jump(cX, cY, dX, dY, matrix, goal):
 
     return jump(nX, nY, dX, dY, matrix, goal)
 
+import threading
 
 Grid = np.array(
     [[0, 0, 0, 0, 0],
     [0, 0, 0, 1, 0],
     [0, 0, 0, 1, 0],
-    [0, 0, 0, 1, 0],
+    [0, 0, 1, 1, 0],
     [0, 0, 0, 0, 0]]
 )
 
 # Define start and goal positions
-start = (0, 0)
+start = (1, 1)
 goal = (2, 4)
+
+path = []
+closet_forward = []
+closet_backward = []
+
+directions = [(1,0), (1, 1), (0, 1)]
+
+th1 = threading.Thread(target=JPS_Komentar.method, args=(Grid, start, goal, 2))
+th2 = threading.Thread(target=JPS_Komentar.method, args=(Grid, goal, start, 2))
+
+th1.start()
+th2.start()
+
+th1.join()
+th2.join()
+
 
 # Call the JPS method
 # print('A-star Konversional', '='*500)
 # print(Astar_Komentar.method(Grid, start, goal, 2))
 # print('JPS', '='*500)
 # print(JPS_Komentar.method(Grid, start, goal, 2))
-
-directions = [(1,0), (1, 1), (0, 1)]
-
-for direction in directions:
-    dx = direction[0]
-    dy = direction[1]
-    print(f"Arah ({dx}, {dy})")
-    print(jump(start[0], start[1], dx, dy, Grid, goal))
-
-
- 
