@@ -3,6 +3,7 @@ from tkinter import filedialog
 import pygame
 import numpy as np
 import JPS_Komentar
+import JPS_Komentar_Bidirectional
 
 
 # Variabel untuk ketebalan garis
@@ -15,7 +16,7 @@ CIRCLE_COLOR = "#000000"  # Warna bulatan, misalnya tomat
 
 # Konfigurasi grid
 GRID_SIZE = 10
-CELL_SIZE = 50 
+CELL_SIZE = 50
 WIDTH = GRID_SIZE * CELL_SIZE
 HEIGHT = GRID_SIZE * CELL_SIZE
 
@@ -47,6 +48,10 @@ lines = []  # Menyimpan semua garis sebagai ((x1, y1), (x2, y2))
 
 # Variabel untuk mengontrol apakah koordinat ditampilkan atau tidak
 show_coordinates = False
+
+# Variabel untuk drag drawing
+is_dragging = False
+last_cell = None  # Menyimpan sel terakhir yang diproses saat drag
 
 # Fungsi untuk mengonversi kode HEX menjadi tuple RGB
 def hex_to_rgb(hex_code):
@@ -137,6 +142,23 @@ def drawJumpPoint():
 
     points = JPS_Komentar.method()
 
+# Fungsi untuk memproses sel pada saat drag
+def process_cell(row, col):
+    """Memproses sel berdasarkan mode aktif saat ini."""
+    if active_mode == 1:  # Mode rintangan
+        map_grid[row, col] = 1
+    elif active_mode == 0:  # Mode kosong (clear)
+        map_grid[row, col] = 0
+    elif active_mode == 5:  # Mode open list
+        map_grid[row, col] = 5
+    elif active_mode == 6:  # Mode close list
+        map_grid[row, col] = 6
+    elif active_mode == 7:  # Mode abu-abu
+        map_grid[row, col] = 7
+    elif active_mode == 8:  # Mode pink
+        map_grid[row, col] = 8
+    # Mode 2 (start) dan 3 (goal) ditangani khusus di event klik
+
 # Program utama
 running = True
 drawing_line = False  # Apakah sedang menggambar garis
@@ -151,52 +173,63 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = pygame.mouse.get_pos()
             col, row = x // CELL_SIZE, y // CELL_SIZE
-
-            if active_mode == 4:  # Mode garis
-                if not drawing_line:
-                    start_cell = (row, col)  # Titik awal dalam koordinat grid
-                    drawing_line = True
-                else:
-                    end_cell = (row, col)  # Titik akhir dalam koordinat grid
-                    # Hitung titik tengah untuk kedua sel
-                    start_center = (start_cell[1] * CELL_SIZE + CELL_SIZE // 2, start_cell[0] * CELL_SIZE + CELL_SIZE // 2)
-                    end_center = (end_cell[1] * CELL_SIZE + CELL_SIZE // 2, end_cell[0] * CELL_SIZE + CELL_SIZE // 2)
-                    lines.append((start_center, end_center))  # Simpan garis
-                    drawing_line = False
-
-            elif active_mode in [1, 2, 3, 0, 5, 6, 7, 8]:  # Mode grid-based
-                if active_mode == 1:  # Mode rintangan
-                    map_grid[row, col] = 0 if map_grid[row, col] == 1 else 1
+            
+            if 0 <= row < GRID_SIZE and 0 <= col < GRID_SIZE:  # Pastikan dalam batas grid
+                if active_mode == 4:  # Mode garis
+                    if not drawing_line:
+                        start_cell = (row, col)  # Titik awal dalam koordinat grid
+                        drawing_line = True
+                    else:
+                        end_cell = (row, col)  # Titik akhir dalam koordinat grid
+                        # Hitung titik tengah untuk kedua sel
+                        start_center = (start_cell[1] * CELL_SIZE + CELL_SIZE // 2, start_cell[0] * CELL_SIZE + CELL_SIZE // 2)
+                        end_center = (end_cell[1] * CELL_SIZE + CELL_SIZE // 2, end_cell[0] * CELL_SIZE + CELL_SIZE // 2)
+                        lines.append((start_center, end_center))  # Simpan garis
+                        drawing_line = False
                 elif active_mode == 2:  # Mode start
                     map_grid[map_grid == 2] = 0  # Hapus start lama
                     map_grid[row, col] = 2
                 elif active_mode == 3:  # Mode goal
                     map_grid[map_grid == 3] = 0  # Hapus goal lama
                     map_grid[row, col] = 3
-                elif active_mode == 0:  # Mode kosong (clear)
-                    map_grid[row, col] = 0
-                elif active_mode == 5:  # Mode open list
-                    map_grid[row, col] = 5
-                elif active_mode == 6:  # Mode close list
-                    map_grid[row, col] = 6
-                elif active_mode == 7:  # Mode abu-abu
-                    map_grid[row, col] = 7
-                elif active_mode == 8:  # Mode pink
-                    map_grid[row, col] = 8
+                else:  # Mode yang bisa di-drag (obstacle, clear, dll)
+                    is_dragging = True
+                    last_cell = (row, col)
+                    process_cell(row, col)
+
+        # Mouse bergerak saat tombol ditahan (drag)
+        elif event.type == pygame.MOUSEMOTION:
+            if is_dragging:
+                x, y = pygame.mouse.get_pos()
+                col, row = x // CELL_SIZE, y // CELL_SIZE
+                
+                if 0 <= row < GRID_SIZE and 0 <= col < GRID_SIZE:  # Pastikan dalam batas grid
+                    current_cell = (row, col)
+                    if current_cell != last_cell:  # Hanya proses jika sel berubah
+                        process_cell(row, col)
+                        last_cell = current_cell
+
+        # Lepas tombol mouse
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            is_dragging = False
+            last_cell = None
 
         # Ganti mode dengan kombinasi tombol
         if event.type == pygame.KEYDOWN:
             if pygame.key.get_mods() & pygame.KMOD_CTRL:  # Jika Ctrl ditekan
                 if event.key == pygame.K_s:  # Ctrl + S untuk start
                     active_mode = 2
+                    is_dragging = False  # Pastikan drag tidak aktif saat ganti mode
                 elif event.key == pygame.K_g:  # Ctrl + G untuk goal
                     active_mode = 3
+                    is_dragging = False
                 elif event.key == pygame.K_o:  # Ctrl + O untuk obstacle
                     active_mode = 1
                 elif event.key == pygame.K_c:  # Ctrl + C untuk ruang kosong
-                    lines = []  # Menghapus semua garis
+                    active_mode = 0
                 elif event.key == pygame.K_l:  # Ctrl + L untuk garis
                     active_mode = 4
+                    is_dragging = False
                 elif event.key == pygame.K_u:  # Ctrl + U untuk open list
                     active_mode = 5
                 elif event.key == pygame.K_x:  # Ctrl + X untuk close list
@@ -215,23 +248,29 @@ while running:
                 elif event.key == pygame.K_t:  # Ctrl + T untuk menghapus garis terakhir
                     if lines:
                         lines.pop()  # Hapus garis terakhir
-                elif event.key == pygame.K_m:
-
+                elif event.key == pygame.K_m:  # Ctrl + M untuk JPS
                     start = np.argwhere(map_grid == 2)
                     goal = np.argwhere(map_grid == 3)
                     print(f"Start: {start}, Goal: {goal}")
                     if start.size != 0 or goal.size != 0:
                         start = tuple(map(int, start[0]))
                         goal = tuple(map(int, goal[0]))
-                        jp = JPS_Komentar.method(map_grid, start, goal, 2)
+                        jp = JPS_Komentar_Bidirectional.method(map_grid, start, goal, 2)
+
                     else:
-                        jp = JPS_Komentar.method(map_grid, (0,0), (2,2), 2)
+                        jp = JPS_Komentar_Bidirectional.method(map_grid, (0,0), (2,2), 2)
                     
                     jp = jp[0]
                     jp = jp[1:-1]
 
+                    with open("grid_output.txt", "w") as file:
+                        file.write("[\n")
+                        for row in map_grid:
+                            file.write(f"    {row},\n")
+                        file.write("]\n")
+
                     for row, col in jp:
-                        map_grid[row, col] = 5
+                        map_grid[row, col] = 1
 
     # Gambar ulang layar
     screen.fill(hex_to_rgb("#FFFFFF"))
