@@ -90,10 +90,6 @@ def bidirectional_search(matrix, start, goal, hchoice):
     fscore_backward = {goal: heuristic(goal, start, hchoice)}
     heapq.heappush(open_set_backward, (fscore_backward[goal], goal))
     
-    # Untuk debuging
-    print(f"Pqueue forward awal: {open_set_forward}")
-    print(f"Pqueue backward awal: {open_set_backward}")
-    
     # Mulai menghitung waktu eksekusi
     starttime = time.time()
     
@@ -206,24 +202,8 @@ def bidirectional_search(matrix, start, goal, hchoice):
     # Jika kedua pencarian bertemu
     endtime = time.time()
     if intersection:
-        # Cetak informasi debugging
-        print("Close Set Forward", "-"*120)
-        print(close_set_forward)
-        print("Close Set Backward", "-"*120)
-        print(close_set_backward)
-        print("Pqueue Forward", "-"*120)
-        print(open_set_forward)
-        print("Pqueue Backward", "-"*120)
-        print(open_set_backward)
-        print("Came from Forward", "-"*120)
-        print(came_from_forward)
-        print("Came from Backward", "-"*120)
-        print(came_from_backward)
-        
         # Rekonstruksi jalur
         path = reconstruct_path(came_from_forward, came_from_backward, intersection)
-        print("Path", "-"*120)
-        print(path)
         return (path, round(endtime - starttime, 6))
     else:
         # Tidak ditemukan jalur

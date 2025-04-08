@@ -4,6 +4,9 @@ import pygame
 import numpy as np
 import JPS_Komentar
 import JPS_Komentar_Bidirectional
+import Astar_Komentar
+import Astar_Komentar_Bidirectional
+import ast
 
 
 # Variabel untuk ketebalan garis
@@ -15,8 +18,8 @@ CIRCLE_RADIUS = 10  # Ukuran radius bulatan (dalam pixel)
 CIRCLE_COLOR = "#000000"  # Warna bulatan, misalnya tomat
 
 # Konfigurasi grid
-GRID_SIZE = 10
-CELL_SIZE = 50
+GRID_SIZE = 16
+CELL_SIZE = 40
 WIDTH = GRID_SIZE * CELL_SIZE
 HEIGHT = GRID_SIZE * CELL_SIZE
 
@@ -255,8 +258,17 @@ while running:
                     if start.size != 0 or goal.size != 0:
                         start = tuple(map(int, start[0]))
                         goal = tuple(map(int, goal[0]))
-                        jp = JPS_Komentar_Bidirectional.method(map_grid, start, goal, 2)
+                        jp, close_jps = JPS_Komentar.method(map_grid, start, goal, 2)
+                        jpk = JPS_Komentar_Bidirectional.method(map_grid, start, goal, 2)
+                        astar, close_astar = Astar_Komentar.method(map_grid, start, goal, 2)
+                        astark = Astar_Komentar_Bidirectional.method(map_grid, start, goal, 2)
 
+                        print(f"JPS Konvensional : {jp}")
+                        print(f"Close set JPS : {close_jps}")
+                        # print(f"JPS Bidirectional : {jpk}")
+                        print(f"Astar Konvensional : {astar}")
+                        print(f"Close set AStar : {close_astar}")
+                        # print(f"Astar Bidirectional : {astark}")
                     else:
                         jp = JPS_Komentar_Bidirectional.method(map_grid, (0,0), (2,2), 2)
                     
@@ -265,12 +277,25 @@ while running:
 
                     with open("grid_output.txt", "w") as file:
                         file.write("[\n")
-                        for row in map_grid:
-                            file.write(f"    {row},\n")
+                        for row in map_grid:  # loop per baris
+                            # Ubah setiap elemen ke int biasa (bukan np.int32 misalnya)
+                            row_list = [int(item) for item in row]
+                            file.write(f"    {row_list},\n")
                         file.write("]\n")
 
                     for row, col in jp:
-                        map_grid[row, col] = 1
+                        map_grid[row, col] = 5
+
+                    for row, col in close_jps:
+                        if map_grid[row][col] != 2:
+                            map_grid[row, col] = 6
+
+                elif event.key == pygame.K_f:  # Ctrl + f untuk JPS
+                    with open("grid_output.txt", "r") as file:
+                        content = file.read()
+                        grid_list = ast.literal_eval(content)
+                    map_grid = np.array(grid_list)
+
 
     # Gambar ulang layar
     screen.fill(hex_to_rgb("#FFFFFF"))

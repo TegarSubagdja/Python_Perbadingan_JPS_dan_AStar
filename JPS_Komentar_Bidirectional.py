@@ -334,7 +334,6 @@ def method(matrix, start, goal, hchoice):
             if min_f_forward + min_f_backward >= best_path_length:
                 path = reconstruct_path(came_from_forward, came_from_backward, intersection, start, goal)
                 endtime = time.time()
-                print(path, round(endtime - starttime, 6))
                 return (path, round(endtime - starttime, 6))
 
     endtime = time.time()
@@ -342,7 +341,6 @@ def method(matrix, start, goal, hchoice):
     # Jika kedua pencarian bertemu
     if intersection:
         path = reconstruct_path(came_from_forward, came_from_backward, intersection, start, goal)
-        print(path, round(endtime - starttime, 6))
         return (path, round(endtime - starttime, 6))
     else:
         # Tidak ditemukan jalur
