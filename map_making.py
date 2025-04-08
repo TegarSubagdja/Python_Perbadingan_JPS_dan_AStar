@@ -56,6 +56,9 @@ show_coordinates = False
 is_dragging = False
 last_cell = None  # Menyimpan sel terakhir yang diproses saat drag
 
+# Variabel untuk metode yang digunakan
+method = 1
+
 # Fungsi untuk mengonversi kode HEX menjadi tuple RGB
 def hex_to_rgb(hex_code):
     """Mengubah kode HEX menjadi tuple RGB."""
@@ -166,6 +169,7 @@ def process_cell(row, col):
 running = True
 drawing_line = False  # Apakah sedang menggambar garis
 start_cell = None     # Titik awal garis dalam koordinat grid
+path_result = None
 
 while running:
     for event in pygame.event.get():
@@ -258,22 +262,35 @@ while running:
                     if start.size != 0 or goal.size != 0:
                         start = tuple(map(int, start[0]))
                         goal = tuple(map(int, goal[0]))
-                        jp, close_jps = JPS_Komentar.method(map_grid, start, goal, 2)
-                        jpk = JPS_Komentar_Bidirectional.method(map_grid, start, goal, 2)
-                        astar, close_astar = Astar_Komentar.method(map_grid, start, goal, 2)
-                        astark = Astar_Komentar_Bidirectional.method(map_grid, start, goal, 2)
-
-                        print(f"JPS Konvensional : {jp}")
-                        print(f"Close set JPS : {close_jps}")
-                        # print(f"JPS Bidirectional : {jpk}")
-                        print(f"Astar Konvensional : {astar}")
-                        print(f"Close set AStar : {close_astar}")
-                        # print(f"Astar Bidirectional : {astark}")
+                        if method == 1:
+                            map_grid[map_grid == 6] = 0
+                            path_result, closet, pqueue = Astar_Komentar.method(map_grid, start, goal, 2)
+                            print(f"Astar Konvensional : {path_result}")
+                            print(f"Close set AStar : {closet}")
+                            print(pqueue)
+                        elif method == 2:
+                            map_grid[map_grid == 6] = 0
+                            path_result, closet, pqueue = JPS_Komentar.method(map_grid, start, goal, 2)
+                            print(f"JPS Konvensional : {path_result}")
+                            print(f"Close set JPS : {closet}")
                     else:
-                        jp = JPS_Komentar_Bidirectional.method(map_grid, (0,0), (2,2), 2)
+                        path_result = JPS_Komentar_Bidirectional.method(map_grid, (0,0), (2,2), 2)
                     
-                    jp = jp[0]
-                    jp = jp[1:-1]
+                    path_result = path_result[0]
+                    path_result = path_result[1:-1]
+
+                    for row, col in path_result:
+                        map_grid[row, col] = 5
+
+                    for _, (x, y) in pqueue:
+                        map_grid[x][y] = 5
+
+                    for row, col in closet:
+                        if map_grid[row][col] != 2:
+                            map_grid[row, col] = 6
+
+                elif event.key == pygame.K_n:
+                    map_grid[map_grid == 6] = 0
 
                     with open("grid_output.txt", "w") as file:
                         file.write("[\n")
@@ -282,19 +299,23 @@ while running:
                             row_list = [int(item) for item in row]
                             file.write(f"    {row_list},\n")
                         file.write("]\n")
-
-                    for row, col in jp:
-                        map_grid[row, col] = 5
-
-                    for row, col in close_jps:
-                        if map_grid[row][col] != 2:
-                            map_grid[row, col] = 6
+                        print("Berhasil disimpan")
 
                 elif event.key == pygame.K_f:  # Ctrl + f untuk JPS
                     with open("grid_output.txt", "r") as file:
                         content = file.read()
                         grid_list = ast.literal_eval(content)
                     map_grid = np.array(grid_list)
+                
+                elif event.key == pygame.K_1:
+                    method = 1
+                elif event.key == pygame.K_2:
+                    method = 2
+                elif event.key == pygame.K_3:
+                    method = 3
+                elif event.key == pygame.K_4:
+                    method = 4
+                    
 
 
     # Gambar ulang layar

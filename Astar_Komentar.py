@@ -79,7 +79,7 @@ def method(matrix, start, goal, hchoice):
             path.append(start)
             path = path[::-1]
             endtime = time.time()
-            return (path, round(endtime - starttime, 6)), close_set
+            return (path, round(endtime - starttime, 6)), close_set, pqueue
         
         # Tambahkan node saat ini ke set tertutup
         close_set.add(current)
