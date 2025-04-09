@@ -2,10 +2,10 @@ import tkinter as tk
 from tkinter import filedialog
 import pygame
 import numpy as np
-import JPS_Komentar
-import JPS_Komentar_Bidirectional
-import Astar_Komentar
-import Astar_Komentar_Bidirectional
+from Algoritma import JPS_Komentar
+from Algoritma import JPS_Komentar_Bidirectional
+from Algoritma import Astar_Komentar
+from Algoritma import Astar_Komentar_Bidirectional
 import ast
 
 
@@ -143,11 +143,6 @@ def save_image(replace=False, default_filename='grid_image.png'):
             print(f"Gagal menyimpan gambar: {e}")
             return False
 
-def drawJumpPoint():
-    import JPS_Komentar
-
-    points = JPS_Komentar.method()
-
 # Fungsi untuk memproses sel pada saat drag
 def process_cell(row, col):
     """Memproses sel berdasarkan mode aktif saat ini."""
@@ -256,6 +251,7 @@ while running:
                     if lines:
                         lines.pop()  # Hapus garis terakhir
                 elif event.key == pygame.K_m:  # Ctrl + M untuk JPS
+                    map_grid[(map_grid == 6) | (map_grid == 5)] = 0
                     start = np.argwhere(map_grid == 2)
                     goal = np.argwhere(map_grid == 3)
                     print(f"Start: {start}, Goal: {goal}")
@@ -263,13 +259,11 @@ while running:
                         start = tuple(map(int, start[0]))
                         goal = tuple(map(int, goal[0]))
                         if method == 1:
-                            map_grid[map_grid == 6] = 0
                             path_result, closet, pqueue = Astar_Komentar.method(map_grid, start, goal, 2)
                             print(f"Astar Konvensional : {path_result}")
                             print(f"Close set AStar : {closet}")
                             print(pqueue)
                         elif method == 2:
-                            map_grid[map_grid == 6] = 0
                             path_result, closet, pqueue = JPS_Komentar.method(map_grid, start, goal, 2)
                             print(f"JPS Konvensional : {path_result}")
                             print(f"Close set JPS : {closet}")
@@ -290,9 +284,9 @@ while running:
                             map_grid[row, col] = 6
 
                 elif event.key == pygame.K_n:
-                    map_grid[map_grid == 6] = 0
+                    map_grid[(map_grid == 6) | (map_grid == 5)] = 0
 
-                    with open("grid_output.txt", "w") as file:
+                    with open("Output/grid_output.txt", "w") as file:
                         file.write("[\n")
                         for row in map_grid:  # loop per baris
                             # Ubah setiap elemen ke int biasa (bukan np.int32 misalnya)
@@ -302,7 +296,7 @@ while running:
                         print("Berhasil disimpan")
 
                 elif event.key == pygame.K_f:  # Ctrl + f untuk JPS
-                    with open("grid_output.txt", "r") as file:
+                    with open("Output/grid_output.txt", "r") as file:
                         content = file.read()
                         grid_list = ast.literal_eval(content)
                     map_grid = np.array(grid_list)

@@ -2,8 +2,8 @@ import pygame
 import os
 import datetime
 import grid
-import astar
-import jps
+from Algoritma import astar
+from Algoritma import jps
 
 
 def main():
