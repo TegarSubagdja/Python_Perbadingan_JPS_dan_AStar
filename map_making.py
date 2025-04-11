@@ -6,6 +6,7 @@ from Algoritma import JPS_Komentar
 from Algoritma import JPS_Komentar_Bidirectional
 from Algoritma import Astar_Komentar
 from Algoritma import Astar_Komentar_Bidirectional
+from MethodOptimasi.PathPolylineOptimization import prunning
 import ast
 
 
@@ -241,7 +242,7 @@ while running:
                 elif event.key == pygame.K_q:  # Ctrl + Q untuk warna pink
                     active_mode = 8
                 elif event.key == pygame.K_p:  # Ctrl + P untuk save
-                    save_image(replace=True)
+                    save_image(replace=False)
                 elif event.key == pygame.K_r:  # Ctrl + R untuk reset grid
                     map_grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=int)
                     lines = []
@@ -251,9 +252,13 @@ while running:
                     if lines:
                         lines.pop()  # Hapus garis terakhir
                 elif event.key == pygame.K_m:  # Ctrl + M untuk JPS
-                    map_grid[(map_grid == 6) | (map_grid == 5)] = 0
+
+                    map_grid[(map_grid == 6) | (map_grid == 5) | (map_grid == 8)] = 0
                     start = np.argwhere(map_grid == 2)
                     goal = np.argwhere(map_grid == 3)
+                    pqueue = None
+                    closet = None
+                    
                     print(f"Start: {start}, Goal: {goal}")
                     if start.size != 0 or goal.size != 0:
                         start = tuple(map(int, start[0]))
@@ -261,12 +266,11 @@ while running:
                         if method == 1:
                             path_result, closet, pqueue = Astar_Komentar.method(map_grid, start, goal, 2)
                             print(f"Astar Konvensional : {path_result}")
-                            print(f"Close set AStar : {closet}")
-                            print(pqueue)
+                            # print(f"Close set AStar : {closet}")
                         elif method == 2:
                             path_result, closet, pqueue = JPS_Komentar.method(map_grid, start, goal, 2)
-                            print(f"JPS Konvensional : {path_result}")
-                            print(f"Close set JPS : {closet}")
+                            # print(f"JPS Konvensional : {path_result}")
+                            # print(f"Close set JPS : {closet}")
                     else:
                         path_result = JPS_Komentar_Bidirectional.method(map_grid, (0,0), (2,2), 2)
                     
@@ -276,15 +280,21 @@ while running:
                     for row, col in path_result:
                         map_grid[row, col] = 5
 
-                    for _, (x, y) in pqueue:
-                        map_grid[x][y] = 5
+                    if pqueue:
+                        for _, (x, y) in pqueue:
+                            map_grid[x][y] = 5
 
-                    for row, col in closet:
-                        if map_grid[row][col] != 2:
-                            map_grid[row, col] = 6
+                    if closet:
+                        for row, col in closet:
+                            if map_grid[row][col] != 2:
+                                map_grid[row, col] = 6
+                                
+                    if path_result:
+                        for x, y in path_result:
+                            map_grid[x][y] = 8
 
                 elif event.key == pygame.K_n:
-                    map_grid[(map_grid == 6) | (map_grid == 5)] = 0
+                    map_grid[(map_grid == 6) | (map_grid == 5) | (map_grid == 8)] = 0
 
                     with open("Output/grid_output.txt", "w") as file:
                         file.write("[\n")
@@ -300,6 +310,18 @@ while running:
                         content = file.read()
                         grid_list = ast.literal_eval(content)
                     map_grid = np.array(grid_list)
+
+                elif event.key == pygame.K_b:
+                    start = np.argwhere(map_grid == 2)
+                    goal = np.argwhere(map_grid == 3)
+                    if start.size != 0 or goal.size != 0:
+                        start = tuple(map(int, start[0]))
+                        goal = tuple(map(int, goal[0]))
+                        print(f"Start adalah {start} dan goal adalah {goal}")
+                        path_result, closet, pqueue = Astar_Komentar.method(map_grid, start, goal, 2)
+                        path_prunning = prunning(path_result[0], map_grid)
+                        print(f"Path asli adalah : {path_result}")
+                        print(f"Path prunning adalah : {path_prunning}")
                 
                 elif event.key == pygame.K_1:
                     method = 1

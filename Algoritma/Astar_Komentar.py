@@ -2,7 +2,13 @@
 # math: untuk operasi matematika
 # heapq: untuk implementasi antrian prioritas
 # time: untuk mengukur waktu eksekusi
+import sys
+sys.path.append('../')
+
 import math, heapq, time
+from MethodOptimasi.BarrierRasterCoefficient import barrierRaster
+from MethodOptimasi.Guideline import guidline
+from MethodOptimasi.PathPolylineOptimization import supercover_line
 
 
 # Fungsi untuk memeriksa apakah suatu pergerakan terhalang atau tidak
@@ -57,6 +63,10 @@ def method(matrix, start, goal, hchoice):
     came_from = {}    # Dictionary untuk menyimpan jalur
     gscore = {start: 0}  # Biaya dari start ke node saat ini
     fscore = {start: heuristic(start, goal, hchoice)}  # Total estimasi biaya
+
+    # Hitung Barier Raster
+    p = barrierRaster(start, goal, matrix)
+    print(f"Nilai Barier Raster adalah {p}")
 
     # Inisialisasi antrian prioritas
     pqueue = []
@@ -117,7 +127,10 @@ def method(matrix, start, goal, hchoice):
             if tentative_g_score < gscore.get(neighbour, 0) or neighbour not in [i[1] for i in pqueue]:
                 came_from[neighbour] = current
                 gscore[neighbour] = tentative_g_score
-                fscore[neighbour] = tentative_g_score + heuristic(neighbour, goal, hchoice)
+                # fscore[neighbour] = tentative_g_score + heuristic(neighbour, goal, hchoice) # tanpa barier raster
+                # fscore[neighbour] = tentative_g_score + (heuristic(neighbour, goal, hchoice) * (1-math.log(p))) # dengan barier raster
+                fscore[neighbour] = tentative_g_score + heuristic(neighbour, goal, hchoice) + guidline(start, goal, current) # dengan guidline
+                # fscore[neighbour] = tentative_g_score + (heuristic(neighbour, goal, hchoice) * (1-math.log(p))) + guidline(start, goal, current) # dengan barier raster dan guidline
                 heapq.heappush(pqueue, (fscore[neighbour], neighbour))
         
         endtime = time.time()
