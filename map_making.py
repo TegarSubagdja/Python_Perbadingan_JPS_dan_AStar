@@ -265,7 +265,7 @@ while running:
                         goal = tuple(map(int, goal[0]))
                         if method == 1:
                             path_result, closet, pqueue = Astar_Komentar.method(map_grid, start, goal, 2)
-                            print(f"Astar Konvensional : {path_result}")
+                            # print(f"Astar Konvensional : {path_result}")
                             # print(f"Close set AStar : {closet}")
                         elif method == 2:
                             path_result, closet, pqueue = JPS_Komentar.method(map_grid, start, goal, 2)

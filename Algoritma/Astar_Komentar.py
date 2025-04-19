@@ -2,13 +2,14 @@
 # math: untuk operasi matematika
 # heapq: untuk implementasi antrian prioritas
 # time: untuk mengukur waktu eksekusi
+import math, heapq, time
 import sys
 sys.path.append('../')
-
-import math, heapq, time
 from MethodOptimasi.BarrierRasterCoefficient import barrierRaster
 from MethodOptimasi.Guideline import guidline
 from MethodOptimasi.PathPolylineOptimization import supercover_line
+
+
 
 
 # Fungsi untuk memeriksa apakah suatu pergerakan terhalang atau tidak
