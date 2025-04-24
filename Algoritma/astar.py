@@ -21,33 +21,33 @@ def blocked(cX, cY, dX, dY, matrix):
     return False
 
 
-def heuristic(a, b, hchoice):
+def heuristic(start, goal, hchoice):
     if hchoice == 1:
-        xdist = math.fabs(b[0] - a[0])
-        ydist = math.fabs(b[1] - a[1])
+        xdist = math.fabs(goal[0] - start[0])
+        ydist = math.fabs(goal[1] - start[1])
         if xdist > ydist:
             return 14 * ydist + 10 * (xdist - ydist)
         else:
             return 14 * xdist + 10 * (ydist - xdist)
     if hchoice == 2:
-        return math.sqrt((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2)
+        return math.sqrt((goal[0] - start[0]) ** 2 + (goal[1] - start[1]) ** 2)
 
 
 def method(matrix, start, goal, hchoice):
-    close_set = set()
+    close_list = set()
     came_from = {}
-    gscore = {start: 0}
-    fscore = {start: heuristic(start, goal, hchoice)}
+    gn = {start: 0}
+    fn = {start: heuristic(start, goal, hchoice)}
 
-    pqueue = []
+    open_list = []
 
-    heapq.heappush(pqueue, (fscore[start], start))
+    heapq.heappush(open_list, (fn[start], start))
 
     starttime = time.time()
 
-    while pqueue:
+    while open_list:
 
-        current = heapq.heappop(pqueue)[1]
+        current = heapq.heappop(open_list)[1]
         if current == goal:
             path = []
             while current in came_from:
@@ -57,9 +57,9 @@ def method(matrix, start, goal, hchoice):
             path = path[::]
             #print(gscore[goal])
             endtime = time.time()
-            return (path, round(endtime - starttime, 6))
+            return (path, round(endtime - starttime, 6)), close_list, open_list 
 
-        close_set.add(current)
+        close_list.add(current)
         for dX, dY in [
             (0, 1),
             (0, -1),
@@ -78,28 +78,28 @@ def method(matrix, start, goal, hchoice):
 
             if hchoice == 1:
                 if dX != 0 and dY != 0:
-                    tentative_g_score = gscore[current] + 14
+                    tentative_gn = gn[current] + 14
                 else:
-                    tentative_g_score = gscore[current] + 10
+                    tentative_gn = gn[current] + 10
             elif hchoice == 2:
                 if dX != 0 and dY != 0:
-                    tentative_g_score = gscore[current] + math.sqrt(2)
+                    tentative_gn = gn[current] + math.sqrt(2)
                 else:
-                    tentative_g_score = gscore[current] + 1
+                    tentative_gn = gn[current] + 1
 
             if (
-                neighbour in close_set
+                neighbour in close_list
             ):  # and tentative_g_score >= gscore.get(neighbour,0):
                 continue
 
-            if tentative_g_score < gscore.get(
+            if tentative_gn < gn.get(
                 neighbour, 0
-            ) or neighbour not in [i[1] for i in pqueue]:
+            ) or neighbour not in [i[1] for i in open_list]:
                 came_from[neighbour] = current
-                gscore[neighbour] = tentative_g_score
-                fscore[neighbour] = tentative_g_score + heuristic(
+                gn[neighbour] = tentative_gn
+                fn[neighbour] = tentative_gn + heuristic(
                     neighbour, goal, hchoice
                 )
-                heapq.heappush(pqueue, (fscore[neighbour], neighbour))
+                heapq.heappush(open_list, (fn[neighbour], neighbour))
         endtime = time.time()
     return (0, round(endtime - starttime, 6))

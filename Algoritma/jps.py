@@ -1,59 +1,59 @@
 import math, time, heapq
 
 
-def heuristic(a, b, hchoice):
+def heuristic(start, goal, hchoice):
     if hchoice == 1:
-        xdist = math.fabs(b[0] - a[0])
-        ydist = math.fabs(b[1] - a[1])
+        xdist = math.fabs(goal[0] - start[0])
+        ydist = math.fabs(goal[1] - start[1])
         if xdist > ydist:
             return 14 * ydist + 10 * (xdist - ydist)
         else:
             return 14 * xdist + 10 * (ydist - xdist)
     if hchoice == 2:
-        return math.sqrt((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2)
+        return math.sqrt((goal[0] - start[0]) ** 2 + (goal[1] - start[1]) ** 2)
 
 
-def blocked(cX, cY, dX, dY, matrix):
-    if cX + dX < 0 or cX + dX >= matrix.shape[0]:
+def blocked(currentX, currentY, moveX, moveY, matrix):
+    if currentX + moveX < 0 or currentX + moveX >= matrix.shape[0]:
         return True
-    if cY + dY < 0 or cY + dY >= matrix.shape[1]:
+    if currentY + moveY < 0 or currentY + moveY >= matrix.shape[1]:
         return True
-    if dX != 0 and dY != 0:
-        if matrix[cX + dX][cY] == 1 and matrix[cX][cY + dY] == 1:
+    if moveX != 0 and moveY != 0:
+        if matrix[currentX + moveX][currentY] == 1 and matrix[currentX][currentY + moveY] == 1:
             return True
-        if matrix[cX + dX][cY + dY] == 1:
+        if matrix[currentX + moveX][currentY + moveY] == 1:
             return True
     else:
-        if dX != 0:
-            if matrix[cX + dX][cY] == 1:
+        if moveX != 0:
+            if matrix[currentX + moveX][currentY] == 1:
                 return True
         else:
-            if matrix[cX][cY + dY] == 1:
+            if matrix[currentX][currentY + moveY] == 1:
                 return True
     return False
 
 
-def dblock(cX, cY, dX, dY, matrix):
-    if matrix[cX - dX][cY] == 1 and matrix[cX][cY - dY] == 1:
+def dblock(currentX, currentY, moveX, moveY, matrix):
+    if matrix[currentX - moveX][currentY] == 1 and matrix[currentX][currentY - moveY] == 1:
         return True
     else:
         return False
 
 
-def direction(cX, cY, pX, pY):
-    dX = int(math.copysign(1, cX - pX))
-    dY = int(math.copysign(1, cY - pY))
-    if cX - pX == 0:
-        dX = 0
-    if cY - pY == 0:
-        dY = 0
-    return (dX, dY)
+def direction(currentX, currentY, parentX, parentY):
+    moveX = int(math.copysign(1, currentX - parentX))
+    moveY = int(math.copysign(1, currentY - parentY))
+    if currentX - parentX == 0:
+        moveX = 0
+    if currentY - parentY == 0:
+        moveY = 0
+    return (moveX, moveY)
 
 
-def nodeNeighbours(cX, cY, parent, matrix):
+def nodeNeighbours(currentX, currentY, parent, matrix):
     neighbours = []
     if type(parent) != tuple:
-        for i, j in [
+        for moveX, moveY in [
             (-1, 0),
             (0, -1),
             (1, 0),
@@ -63,57 +63,56 @@ def nodeNeighbours(cX, cY, parent, matrix):
             (1, -1),
             (1, 1),
         ]:
-            if not blocked(cX, cY, i, j, matrix):
-                neighbours.append((cX + i, cY + j))
+            if not blocked(currentX, currentY, moveX, moveY, matrix):
+                neighbours.append((currentX + moveX, currentY + moveY))
 
         return neighbours
-        
-    dX, dY = direction(cX, cY, parent[0], parent[1])
+    moveX, moveY = direction(currentX, currentY, parent[0], parent[1])
 
-    if dX != 0 and dY != 0:
-        if not blocked(cX, cY, 0, dY, matrix):
-            neighbours.append((cX, cY + dY))
-        if not blocked(cX, cY, dX, 0, matrix):
-            neighbours.append((cX + dX, cY))
+    if moveX != 0 and moveY != 0:
+        if not blocked(currentX, currentY, 0, moveY, matrix):
+            neighbours.append((currentX, currentY + moveY))
+        if not blocked(currentX, currentY, moveX, 0, matrix):
+            neighbours.append((currentX + moveX, currentY))
         if (
-            not blocked(cX, cY, 0, dY, matrix)
-            or not blocked(cX, cY, dX, 0, matrix)
-        ) and not blocked(cX, cY, dX, dY, matrix):
-            neighbours.append((cX + dX, cY + dY))
-        if blocked(cX, cY, -dX, 0, matrix) and not blocked(
-            cX, cY, 0, dY, matrix
+            not blocked(currentX, currentY, 0, moveY, matrix)
+            or not blocked(currentX, currentY, moveX, 0, matrix)
+        ) and not blocked(currentX, currentY, moveX, moveY, matrix):
+            neighbours.append((currentX + moveX, currentY + moveY))
+        if blocked(currentX, currentY, -moveX, 0, matrix) and not blocked(
+            currentX, currentY, 0, moveY, matrix
         ):
-            neighbours.append((cX - dX, cY + dY))
-        if blocked(cX, cY, 0, -dY, matrix) and not blocked(
-            cX, cY, dX, 0, matrix
+            neighbours.append((currentX - moveX, currentY + moveY))
+        if blocked(currentX, currentY, 0, -moveY, matrix) and not blocked(
+            currentX, currentY, moveX, 0, matrix
         ):
-            neighbours.append((cX + dX, cY - dY))
+            neighbours.append((currentX + moveX, currentY - moveY))
 
     else:
-        if dX == 0:
-            if not blocked(cX, cY, dX, 0, matrix):
-                if not blocked(cX, cY, 0, dY, matrix):
-                    neighbours.append((cX, cY + dY))
-                if blocked(cX, cY, 1, 0, matrix):
-                    neighbours.append((cX + 1, cY + dY))
-                if blocked(cX, cY, -1, 0, matrix):
-                    neighbours.append((cX - 1, cY + dY))
+        if moveX == 0:
+            if not blocked(currentX, currentY, moveX, 0, matrix):
+                if not blocked(currentX, currentY, 0, moveY, matrix):
+                    neighbours.append((currentX, currentY + moveY))
+                if blocked(currentX, currentY, 1, 0, matrix):
+                    neighbours.append((currentX + 1, currentY + moveY))
+                if blocked(currentX, currentY, -1, 0, matrix):
+                    neighbours.append((currentX - 1, currentY + moveY))
 
         else:
-            if not blocked(cX, cY, dX, 0, matrix):
-                if not blocked(cX, cY, dX, 0, matrix):
-                    neighbours.append((cX + dX, cY))
-                if blocked(cX, cY, 0, 1, matrix):
-                    neighbours.append((cX + dX, cY + 1))
-                if blocked(cX, cY, 0, -1, matrix):
-                    neighbours.append((cX + dX, cY - 1))
+            if not blocked(currentX, currentY, moveX, 0, matrix):
+                if not blocked(currentX, currentY, moveX, 0, matrix):
+                    neighbours.append((currentX + moveX, currentY))
+                if blocked(currentX, currentY, 0, 1, matrix):
+                    neighbours.append((currentX + moveX, currentY + 1))
+                if blocked(currentX, currentY, 0, -1, matrix):
+                    neighbours.append((currentX + moveX, currentY - 1))
     return neighbours
 
 
-def jump(cX, cY, dX, dY, matrix, goal):
+def jump(currentX, currentY, moveX, moveY, matrix, goal):
 
-    nX = cX + dX
-    nY = cY + dY
+    nX = currentX + moveX
+    nY = currentY + moveY
     if blocked(nX, nY, 0, 0, matrix):
         return None
 
@@ -123,45 +122,45 @@ def jump(cX, cY, dX, dY, matrix, goal):
     oX = nX
     oY = nY
 
-    if dX != 0 and dY != 0:
+    if moveX != 0 and moveY != 0:
         while True:
             if (
-                not blocked(oX, oY, -dX, dY, matrix)
-                and blocked(oX, oY, -dX, 0, matrix)
-                or not blocked(oX, oY, dX, -dY, matrix)
-                and blocked(oX, oY, 0, -dY, matrix)
+                not blocked(oX, oY, -moveX, moveY, matrix)
+                and blocked(oX, oY, -moveX, 0, matrix)
+                or not blocked(oX, oY, moveX, -moveY, matrix)
+                and blocked(oX, oY, 0, -moveY, matrix)
             ):
                 return (oX, oY)
 
             if (
-                jump(oX, oY, dX, 0, matrix, goal) != None
-                or jump(oX, oY, 0, dY, matrix, goal) != None
+                jump(oX, oY, moveX, 0, matrix, goal) != None
+                or jump(oX, oY, 0, moveY, matrix, goal) != None
             ):
                 return (oX, oY)
 
-            oX += dX
-            oY += dY
+            oX += moveX
+            oY += moveY
 
             if blocked(oX, oY, 0, 0, matrix):
                 return None
 
-            if dblock(oX, oY, dX, dY, matrix):
+            if dblock(oX, oY, moveX, moveY, matrix):
                 return None
 
             if (oX, oY) == goal:
                 return (oX, oY)
     else:
-        if dX != 0:
+        if moveX != 0:
             while True:
                 if (
-                    not blocked(oX, nY, dX, 1, matrix)
+                    not blocked(oX, nY, moveX, 1, matrix)
                     and blocked(oX, nY, 0, 1, matrix)
-                    or not blocked(oX, nY, dX, -1, matrix)
+                    or not blocked(oX, nY, moveX, -1, matrix)
                     and blocked(oX, nY, 0, -1, matrix)
                 ):
                     return (oX, nY)
 
-                oX += dX
+                oX += moveX
 
                 if blocked(oX, nY, 0, 0, matrix):
                     return None
@@ -172,14 +171,14 @@ def jump(cX, cY, dX, dY, matrix, goal):
         else:
             while True:
                 if (
-                    not blocked(nX, oY, 1, dY, matrix)
+                    not blocked(nX, oY, 1, moveY, matrix)
                     and blocked(nX, oY, 1, 0, matrix)
-                    or not blocked(nX, oY, -1, dY, matrix)
+                    or not blocked(nX, oY, -1, moveY, matrix)
                     and blocked(nX, oY, -1, 0, matrix)
                 ):
                     return (nX, oY)
 
-                oY += dY
+                oY += moveY
 
                 if blocked(nX, oY, 0, 0, matrix):
                     return None
@@ -187,41 +186,44 @@ def jump(cX, cY, dX, dY, matrix, goal):
                 if (nX, oY) == goal:
                     return (nX, oY)
 
-    return jump(nX, nY, dX, dY, matrix, goal)
+    return jump(nX, nY, moveX, moveY, matrix, goal)
 
 
-def identifySuccessors(cX, cY, came_from, matrix, goal):
+def identifySuccessors(currentX, currentY, came_from, matrix, goal):
     successors = []
-    neighbours = nodeNeighbours(cX, cY, came_from.get((cX, cY), 0), matrix)
+    neighbours = nodeNeighbours(currentX, currentY, came_from.get((currentX, currentY), 0), matrix)
 
     for cell in neighbours:
-        dX = cell[0] - cX
-        dY = cell[1] - cY
+        moveX = cell[0] - currentX
+        moveY = cell[1] - currentY
 
-        jumpPoint = jump(cX, cY, dX, dY, matrix, goal)
+        jumpPoint = jump(currentX, currentY, moveX, moveY, matrix, goal)
 
         if jumpPoint != None:
             successors.append(jumpPoint)
 
+        print(f"MoveX : {moveX}, moveY : {moveY}")
+        print(f"Jump Point : {jumpPoint}")
+        
     return successors
 
 
 def method(matrix, start, goal, hchoice):
 
     came_from = {}
-    close_set = set()
-    gscore = {start: 0}
-    fscore = {start: heuristic(start, goal, hchoice)}
+    close_list = set()
+    gn = {start: 0}
+    fn = {start: heuristic(start, goal, hchoice)}
 
-    pqueue = []
+    open_list = []
 
-    heapq.heappush(pqueue, (fscore[start], start))
+    heapq.heappush(open_list, (fn[start], start))
 
     starttime = time.time()
 
-    while pqueue:
+    while open_list:
 
-        current = heapq.heappop(pqueue)[1]
+        current = heapq.heappop(open_list)[1]
         if current == goal:
             data = []
             while current in came_from:
@@ -230,10 +232,10 @@ def method(matrix, start, goal, hchoice):
             data.append(start)
             data = data[::-1]
             endtime = time.time()
-            #print(gscore[goal])
-            return (data, round(endtime - starttime, 6))
+            #print(gn[goal])
+            return (data, round(endtime - starttime, 6)), close_list, open_list
 
-        close_set.add(current)
+        close_list.add(current)
 
         successors = identifySuccessors(
             current[0], current[1], came_from, matrix, goal
@@ -243,39 +245,39 @@ def method(matrix, start, goal, hchoice):
             jumpPoint = successor
 
             if (
-                jumpPoint in close_set
-            ):  # and tentative_g_score >= gscore.get(jumpPoint,0):
+                jumpPoint in close_list
+            ):  # and tentative_gn >= gn.get(jumpPoint,0):
                 continue
 
-            tentative_g_score = gscore[current] + lenght(
+            tentative_gn = gn[current] + lenght(
                 current, jumpPoint, hchoice
             )
 
-            if tentative_g_score < gscore.get(
+            if tentative_gn < gn.get(
                 jumpPoint, 0
-            ) or jumpPoint not in [j[1] for j in pqueue]:
+            ) or jumpPoint not in [j[1] for j in open_list]:
                 came_from[jumpPoint] = current
-                gscore[jumpPoint] = tentative_g_score
-                fscore[jumpPoint] = tentative_g_score + heuristic(
+                gn[jumpPoint] = tentative_gn
+                fn[jumpPoint] = tentative_gn + heuristic(
                     jumpPoint, goal, hchoice
                 )
-                heapq.heappush(pqueue, (fscore[jumpPoint], jumpPoint))
+                heapq.heappush(open_list, (fn[jumpPoint], jumpPoint))
         endtime = time.time()
     return (0, round(endtime - starttime, 6))
 
 
 def lenght(current, jumppoint, hchoice):
-    dX, dY = direction(current[0], current[1], jumppoint[0], jumppoint[1])
-    dX = math.fabs(dX)
-    dY = math.fabs(dY)
+    moveX, moveY = direction(current[0], current[1], jumppoint[0], jumppoint[1])
+    moveX = math.fabs(moveX)
+    moveY = math.fabs(moveY)
     lX = math.fabs(current[0] - jumppoint[0])
     lY = math.fabs(current[1] - jumppoint[1])
     if hchoice == 1:
-        if dX != 0 and dY != 0:
+        if moveX != 0 and moveY != 0:
             lenght = lX * 14
             return lenght
         else:
-            lenght = (dX * lX + dY * lY) * 10
+            lenght = (moveX * lX + moveY * lY) * 10
             return lenght
     if hchoice == 2:
         return math.sqrt(

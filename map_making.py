@@ -8,7 +8,8 @@ from Algoritma import Astar_Komentar
 from Algoritma import Astar_Komentar_Bidirectional
 from MethodOptimasi.PathPolylineOptimization import prunning
 import ast
-
+from Algoritma import astar
+from Algoritma import jps
 
 # Variabel untuk ketebalan garis
 LINE_WIDTH = 2  # Menentukan ketebalan garis, bisa diubah sesuai kebutuhan
@@ -252,28 +253,21 @@ while running:
                     if lines:
                         lines.pop()  # Hapus garis terakhir
                 elif event.key == pygame.K_m:  # Ctrl + M untuk JPS
-
                     map_grid[(map_grid == 6) | (map_grid == 5) | (map_grid == 8)] = 0
                     start = np.argwhere(map_grid == 2)
                     goal = np.argwhere(map_grid == 3)
                     pqueue = None
                     closet = None
-                    
                     print(f"Start: {start}, Goal: {goal}")
                     if start.size != 0 or goal.size != 0:
                         start = tuple(map(int, start[0]))
                         goal = tuple(map(int, goal[0]))
                         if method == 1:
-                            path_result, closet, pqueue = Astar_Komentar.method(map_grid, start, goal, 2)
-                            # print(f"Astar Konvensional : {path_result}")
-                            # print(f"Close set AStar : {closet}")
+                            path_result, closet, pqueue = astar.method(map_grid, start, goal, 2)
                         elif method == 2:
-                            path_result, closet, pqueue = JPS_Komentar.method(map_grid, start, goal, 2)
-                            # print(f"JPS Konvensional : {path_result}")
-                            # print(f"Close set JPS : {closet}")
+                            path_result, closet, pqueue = jps.method(map_grid, start, goal, 2)
                     else:
                         path_result = JPS_Komentar_Bidirectional.method(map_grid, (0,0), (2,2), 2)
-                    
                     path_result = path_result[0]
                     path_result = path_result[1:-1]
 
@@ -295,7 +289,6 @@ while running:
 
                 elif event.key == pygame.K_n:
                     map_grid[(map_grid == 6) | (map_grid == 5) | (map_grid == 8)] = 0
-
                     with open("Output/grid_output.txt", "w") as file:
                         file.write("[\n")
                         for row in map_grid:  # loop per baris
@@ -331,8 +324,6 @@ while running:
                     method = 3
                 elif event.key == pygame.K_4:
                     method = 4
-                    
-
 
     # Gambar ulang layar
     screen.fill(hex_to_rgb("#FFFFFF"))
