@@ -201,9 +201,6 @@ def identifySuccessors(currentX, currentY, came_from, matrix, goal):
 
         if jumpPoint != None:
             successors.append(jumpPoint)
-
-        print(f"MoveX : {moveX}, moveY : {moveY}")
-        print(f"Jump Point : {jumpPoint}")
         
     return successors
 
