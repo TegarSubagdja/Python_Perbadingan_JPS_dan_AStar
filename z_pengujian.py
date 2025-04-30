@@ -4,38 +4,66 @@ from MethodOptimasi.PathPolylineOptimization import prunning
 import numpy as np
 import ast
 import z_visualize as visual
+import random
 
-with open("Output/grid_output.txt", "r") as file:
-    content = file.read()
-    grid_list = ast.literal_eval(content)
-    matrix = np.array(grid_list)
+def read_matrix():
+    with open("Output/grid_output.txt", "r") as file:
+        content = file.read()
+        grid_list = ast.literal_eval(content)
+        matrix = np.array(grid_list)
+        return matrix
+
+def generate_matrix(rows, cols, num_obstacles=0):
+    # Buat matriks kosong berisi 0
+    matrix = np.zeros((rows, cols), dtype=int)
+
+    # Total jumlah sel dalam matriks
+    total_cells = rows * cols
+
+    # Jumlah maksimum obstacle tidak boleh lebih dari total sel
+    num_obstacles = min(rows if num_obstacles == 0 else num_obstacles, total_cells)
+
+    # Pilih indeks acak tanpa pengulangan
+    obstacle_indices = random.sample(range(total_cells), num_obstacles)
+
+    for index in obstacle_indices:
+        i = index // cols  # baris
+        j = index % cols   # kolom
+        matrix[i][j] = 1
+
+    return matrix
+
+matrix = generate_matrix(2**4, 2**5)
 
 start = None
 goal = None
 
+height, width = matrix.shape[:]
+
+matrix[1][1] = 2
+matrix[height-3][width-3] = 3
+
 for i in range(matrix.shape[0]):
-    for j in range(matrix.shape[0]):
+    for j in range(matrix.shape[1]):
         if (matrix[i][j] == 2):
             start = (i, j)
         elif (matrix[i][j] == 3):
             goal = (i, j)
 
 
-pathASTAR, close, open = astar.method(matrix, start, goal, 2)
+print(start, goal)
 pathJPS, close, open = jps.method(matrix, start, goal, 2)
+pathASTAR, close, open = astar.method(matrix, start, goal, 2)
 path = prunning(pathJPS[0], matrix)
 
 for x, y in close:
-    matrix[x][y] = 5
+    matrix[x][y] = 6
 
 for _, (x, y) in open:
-    matrix[x][y] = 6
-        
-matrix[start[0]][start[1]] = 2
-matrix[goal[0]][goal[1]] = 3
+    matrix[x][y] = 5
 
 print(f"Panjang openlist : {len(open)}")
 print(f"Panjang closelist : {len(close)}")
 
-visual.main(matrix, pathJPS[0], path, True)
+visual.main(matrix, pathJPS[0], path)
 
