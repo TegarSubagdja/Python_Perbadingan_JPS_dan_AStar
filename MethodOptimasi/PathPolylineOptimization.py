@@ -58,7 +58,7 @@ def supercover_line(awal, akhir):
 def lompatanAman(awal, akhir, peta):
     """Check if any node in the path is an obstacle (1)."""
     nodes = supercover_line(awal, akhir)
-    if(any(peta[y][x] == 1 for x, y in nodes)):
+    if(any(peta[x][y] == 1 for x, y in nodes)):
         return False
     else:
         return True
@@ -89,8 +89,9 @@ def prunning(jalur, peta):
     while True:
         while akhir <= len(jalur)-1:
             if not (lompatanAman(jalur[awal], jalur[akhir], peta)):
-                # print(f"Dari awal {jalur[awal]} dan akhir {jalur[akhir]} tidak aman!")
+                print(f"Dari awal {jalur[awal]} dan akhir {jalur[akhir]} tidak aman!")
                 if (is_45_degree(jalur[awal], jalur[akhir])):
+                    print(f"Dari awal {jalur[awal]} dan akhir {jalur[akhir]} 45!")
                     akhir += 1
                     break
                 elif akhir == len(jalur):

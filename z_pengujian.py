@@ -1,4 +1,6 @@
 from Algoritma import jps
+from Algoritma import astar
+from MethodOptimasi.PathPolylineOptimization import prunning
 import numpy as np
 import ast
 import z_visualize as visual
@@ -19,7 +21,9 @@ for i in range(matrix.shape[0]):
             goal = (i, j)
 
 
-path, close, open = jps.method(matrix, start, goal, 2)
+pathASTAR, close, open = astar.method(matrix, start, goal, 2)
+pathJPS, close, open = jps.method(matrix, start, goal, 2)
+path = prunning(pathJPS[0], matrix)
 
 for x, y in close:
     matrix[x][y] = 5
@@ -33,5 +37,5 @@ matrix[goal[0]][goal[1]] = 3
 print(f"Panjang openlist : {len(open)}")
 print(f"Panjang closelist : {len(close)}")
 
-visual.main(matrix)
+visual.main(matrix, pathJPS[0], path, True)
 
