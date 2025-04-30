@@ -194,8 +194,8 @@ colors = {
 
 # Main loop
 def main():
-    for i in range(0, 15):
-        for j in range(0, 15):
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
             if (matrix[i][j] == 2):
                 start = (i, j)
             elif (matrix[i][j] == 3):

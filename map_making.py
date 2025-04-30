@@ -258,7 +258,6 @@ while running:
                     goal = np.argwhere(map_grid == 3)
                     pqueue = None
                     closet = None
-                    print(f"Start: {start}, Goal: {goal}")
                     if start.size != 0 or goal.size != 0:
                         start = tuple(map(int, start[0]))
                         goal = tuple(map(int, goal[0]))
