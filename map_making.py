@@ -284,7 +284,7 @@ while running:
                                 
                     if path_result:
                         for x, y in path_result:
-                            map_grid[x][y] = 8
+                            map_grid[x][y] = 7
 
                 elif event.key == pygame.K_n:
                     map_grid[(map_grid == 6) | (map_grid == 5) | (map_grid == 8)] = 0

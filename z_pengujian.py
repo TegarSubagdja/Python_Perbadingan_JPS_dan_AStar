@@ -13,17 +13,21 @@ def read_matrix():
         matrix = np.array(grid_list)
         return matrix
 
+def save_matrix(matrix):
+    matrix[(matrix == 6) | (matrix == 5) | (matrix == 8)] = 0
+    with open("Output/grid_output.txt", "w") as file:
+        file.write("[\n")
+        for row in matrix:  # loop per baris
+            # Ubah setiap elemen ke int biasa (bukan np.int32 misalnya)
+            row_list = [int(item) for item in row]
+            file.write(f"    {row_list},\n")
+        file.write("]\n")
+        print("Berhasil disimpan")
+
 def generate_matrix(rows, cols, num_obstacles=0):
-    # Buat matriks kosong berisi 0
     matrix = np.zeros((rows, cols), dtype=int)
-
-    # Total jumlah sel dalam matriks
     total_cells = rows * cols
-
-    # Jumlah maksimum obstacle tidak boleh lebih dari total sel
-    num_obstacles = min(rows if num_obstacles == 0 else num_obstacles, total_cells)
-
-    # Pilih indeks acak tanpa pengulangan
+    num_obstacles = min(cols*2 if num_obstacles == 0 else num_obstacles, total_cells)
     obstacle_indices = random.sample(range(total_cells), num_obstacles)
 
     for index in obstacle_indices:
@@ -31,9 +35,12 @@ def generate_matrix(rows, cols, num_obstacles=0):
         j = index % cols   # kolom
         matrix[i][j] = 1
 
+    save_matrix(matrix)
+
     return matrix
 
-matrix = generate_matrix(2**4, 2**5)
+# matrix = generate_matrix(2**6, 2**7)
+matrix = read_matrix()
 
 start = None
 goal = None
@@ -51,9 +58,8 @@ for i in range(matrix.shape[0]):
             goal = (i, j)
 
 
-print(start, goal)
-pathJPS, close, open = jps.method(matrix, start, goal, 2)
 pathASTAR, close, open = astar.method(matrix, start, goal, 2)
+pathJPS, close, open = jps.method(matrix, start, goal, 2)
 path = prunning(pathJPS[0], matrix)
 
 for x, y in close:
@@ -65,5 +71,5 @@ for _, (x, y) in open:
 print(f"Panjang openlist : {len(open)}")
 print(f"Panjang closelist : {len(close)}")
 
-visual.main(matrix, pathJPS[0], path)
+visual.main(matrix, pathJPS[0], path, False, start, goal)
 

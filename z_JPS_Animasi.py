@@ -240,7 +240,7 @@ def method(matrix, start, goal, hchoice):
                 gn[jumpPoint] = tentative_gn
                 fn[jumpPoint] = tentative_gn + heuristic(
                     jumpPoint, goal, hchoice
-                )
+                ) 
                 heapq.heappush(open_list, (fn[jumpPoint], jumpPoint))
         endtime = time.time()
     return (0, round(endtime - starttime, 6))

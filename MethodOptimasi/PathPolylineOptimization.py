@@ -89,9 +89,7 @@ def prunning(jalur, peta):
     while True:
         while akhir <= len(jalur)-1:
             if not (lompatanAman(jalur[awal], jalur[akhir], peta)):
-                print(f"Dari awal {jalur[awal]} dan akhir {jalur[akhir]} tidak aman!")
                 if (is_45_degree(jalur[awal], jalur[akhir])):
-                    print(f"Dari awal {jalur[awal]} dan akhir {jalur[akhir]} 45!")
                     akhir += 1
                     break
                 elif akhir == len(jalur):
@@ -102,7 +100,6 @@ def prunning(jalur, peta):
                     awal = akhir - 1
                     break
             else:
-                # print(f"Dari awal {jalur[awal]} dan akhir {jalur[akhir]} aman!")
                 akhir += 1
         if (awal_t == awal and akhir_t == akhir):
             break
