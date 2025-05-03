@@ -1,4 +1,5 @@
 import math, time, heapq
+from MethodOptimasi import BarrierRasterCoefficient as br, Guideline as gl
 
 def heuristic(start, goal, hchoice):
     if hchoice == 1:
@@ -211,6 +212,8 @@ def method(matrix, start, goal, hchoice):
     gn = {start: 0}
     fn = {start: heuristic(start, goal, hchoice)}
 
+    brc = br.barrierRaster(start, goal, matrix)
+
     open_list = []
 
     heapq.heappush(open_list, (fn[start], start))
@@ -228,7 +231,7 @@ def method(matrix, start, goal, hchoice):
             data.append(start)
             data = data[::-1]
             endtime = time.time()
-            return (data, round(endtime - starttime, 6)), close_list, open_list
+            return (data, round(endtime - starttime, 6)), close_list, open_list, gn, fn
 
         close_list.add(current)
 
@@ -248,14 +251,12 @@ def method(matrix, start, goal, hchoice):
                 current, jumpPoint, hchoice
             )
 
-            print(f"tentative_gn : {tentative_gn}")
-
             if tentative_gn < gn.get(
                 jumpPoint, 0
             ) or jumpPoint not in [j[1] for j in open_list]:
                 came_from[jumpPoint] = current
                 gn[jumpPoint] = tentative_gn
-                fn[jumpPoint] = tentative_gn + heuristic(jumpPoint, goal, hchoice)
+                fn[jumpPoint] = tentative_gn + (heuristic(jumpPoint, goal, hchoice) * (1-math.log(brc)))
                 heapq.heappush(open_list, (fn[jumpPoint], jumpPoint))
         endtime = time.time()
     return (0, round(endtime - starttime, 6))

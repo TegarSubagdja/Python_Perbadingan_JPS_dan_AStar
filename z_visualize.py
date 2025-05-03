@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from Algoritma.jps import heuristic
 
-CELL_SIZE = 8  # Ukuran setiap sel grid
+CELL_SIZE = 40  # Ukuran setiap sel grid
 
 # Warna RGB
 colors = {
@@ -46,7 +46,7 @@ def draw_lines_between_points(screen, path, color):
         for px, py in pixel_path:
             pygame.draw.circle(screen, (0, 0, 0), (px, py), 4)
 
-def main(matrix, path1, path2=None, show_coords=False, start=None, goal=None):
+def main(matrix, path1, path2=None, show_coords=False, start=None, goal=None, gn=None, fn=None):
     pygame.init()
     GRID_HEIGHT, GRID_WIDTH = matrix.shape
     screen = pygame.display.set_mode((GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE))
@@ -75,10 +75,8 @@ def main(matrix, path1, path2=None, show_coords=False, start=None, goal=None):
                 row = y // CELL_SIZE
                 col = x // CELL_SIZE
 
-                gn = heuristic((row,col), start, 2)
-                hn = heuristic((row,col), goal, 2)
-                fn = gn + hn
+                gn_value = gn.get((row, col), 0)
+                fn_value = fn.get((row, col), 0)
 
-                print(f'Posisi: {row,col} hn: {gn}')
-                print(f'Posisi: {row,col} hn: {hn}')
-                print(f"fn : {fn}")
+                print(f'Posisi: {row,col} gn: {gn_value}')
+                print(f'Posisi: {row,col} fn: {fn_value}')

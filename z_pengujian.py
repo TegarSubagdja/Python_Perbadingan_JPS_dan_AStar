@@ -39,7 +39,7 @@ def generate_matrix(rows, cols, num_obstacles=0):
 
     return matrix
 
-# matrix = generate_matrix(2**6, 2**7)
+# matrix = generate_matrix(2**4, 2**4)
 matrix = read_matrix()
 
 start = None
@@ -59,7 +59,7 @@ for i in range(matrix.shape[0]):
 
 
 pathASTAR, close, open = astar.method(matrix, start, goal, 2)
-pathJPS, close, open = jps.method(matrix, start, goal, 2)
+pathJPS, close, open, gn, fn = jps.method(matrix, start, goal, 2)
 path = prunning(pathJPS[0], matrix)
 
 for x, y in close:
@@ -71,5 +71,5 @@ for _, (x, y) in open:
 print(f"Panjang openlist : {len(open)}")
 print(f"Panjang closelist : {len(close)}")
 
-visual.main(matrix, pathJPS[0], path, False, start, goal)
+visual.main(matrix, pathJPS[0], path, False, start, goal, gn, fn)
 
