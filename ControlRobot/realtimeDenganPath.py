@@ -4,6 +4,7 @@ from cv2 import aruco
 import pygame
 import math
 import threading
+import PID
 
 # Initialize webcam and get its dimensions
 cap = cv2.VideoCapture(0)
@@ -11,6 +12,8 @@ ret, frame = cap.read()
 if not ret:
     print("Failed to read from webcam.")
     exit()
+
+PID_Arah = PID.PID(Kp=1.5, Ki=0.01, Kd=0.5)
 
 # Get webcam size
 FRAME_WIDTH, FRAME_HEIGHT = frame.shape[1], frame.shape[0]
@@ -188,9 +191,12 @@ while running:
     # Draw path lines
     if len(path_points) > 1:
         # Draw completed path segments in a different color
-        if current_target_index > 0 and current_target_index <= len(path_points):
+        if current_target_index > 1 and current_target_index < len(path_points):
             # Draw completed segments
-            pygame.draw.lines(screen, GREEN, False, path_points[:current_target_index], 3)
+            print(f"current_target_index : {current_target_index} len : {len(path_points)}")
+            print(f"Error karena path : {path_points[current_target_index:]}")
+            if len(path_points[current_target_index:]) > 1 :
+                pygame.draw.lines(screen, GREEN, False, path_points[current_target_index:], 3)
         
         # Draw remaining path segments
         if current_target_index < len(path_points) - 1:
@@ -231,6 +237,7 @@ while running:
             screen.blit(font.render(f"Angle Error: {angle_error:.1f}°", True, error_color), (10, 70))
             screen.blit(font.render(f"Distance: {distance:.1f} px", True, BLUE), (10, 100))
             screen.blit(font.render(f"Status: {'Aligned' if aligned else 'Not aligned'}", True, error_color), (10, 130))
+            screen.blit(font.render(f"PID: {PID_Arah.compute(angle_error, 0.1)} px", True, BLUE), (10, 160))
     else:
         # Draw inactive robot
         pygame.draw.circle(screen, (200, 200, 200), (int(robot_pos[0]), int(robot_pos[1])), 15)
