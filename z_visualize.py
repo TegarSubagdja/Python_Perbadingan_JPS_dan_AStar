@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from Algoritma.jps import heuristic
 
-CELL_SIZE = 40  # Ukuran setiap sel grid
+CELL_SIZE = 8  # Ukuran setiap sel grid
 
 # Warna RGB
 colors = {

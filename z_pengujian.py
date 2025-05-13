@@ -39,7 +39,7 @@ def generate_matrix(rows, cols, num_obstacles=0):
 
     return matrix
 
-# matrix = generate_matrix(2**4, 2**4)
+# matrix = generate_matrix(2**6, 2**6, 2**8)
 matrix = read_matrix()
 
 start = None
@@ -48,7 +48,7 @@ goal = None
 height, width = matrix.shape[:]
 
 matrix[1][1] = 2
-matrix[height-3][width-3] = 3
+matrix[height-20][width-3] = 3
 
 for i in range(matrix.shape[0]):
     for j in range(matrix.shape[1]):
@@ -62,9 +62,12 @@ pathASTAR, close, open = astar.method(matrix, start, goal, 2)
 pathJPS, close, open, gn, fn = jps.method(matrix, start, goal, 2)
 path = prunning(pathJPS[0], matrix)
 
+print("Close")
 for x, y in close:
-    matrix[x][y] = 6
+    if matrix[x][y] != 2:
+        matrix[x][y] = 6
 
+print("Open")
 for _, (x, y) in open:
     matrix[x][y] = 5
 

@@ -4,7 +4,7 @@ from cv2 import aruco
 import pygame
 import math
 import threading
-import PID
+from PID import PID
 
 # Initialize webcam and get its dimensions
 cap = cv2.VideoCapture(0)
@@ -57,7 +57,7 @@ def calculate_distance(p1, p2):
 def aruco_thread():
     global robot_pos, robot_angle, marker_detected
     
-    aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
+    aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
     parameters = aruco.DetectorParameters()
     detector = aruco.ArucoDetector(aruco_dict, parameters)
     
