@@ -7,7 +7,8 @@ class PID:
         self.prev_error = 0
         self.integral = 0
 
-    def compute(self, error, dt):
+    def compute(self, measurement, dt):
+        error = measurement
         self.integral += error * dt
         derivative = (error - self.prev_error) / dt if dt != 0 else 0
 
